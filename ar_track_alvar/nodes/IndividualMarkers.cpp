@@ -374,6 +374,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 	{
 	  //Get the pose relative to the camera
 	  int id = (*(marker_detector.markers))[i].GetId();
+    std::cout<<id<<std::endl;
 	  Pose p = (*(marker_detector.markers))[i].pose;
 
 	  double px = p.translation[0]/100.0;
