@@ -50,28 +50,31 @@ namespace ar_track_alvar
 
   // Distance threshold for plane fitting: how far are points
   // allowed to be off the plane?
-  const double distance_threshold_ = 0.005;
+  // const double distance_threshold_ = 0.005;
+  const double distance_threshold_ = 20;
 
   PlaneFitResult fitPlane (ARCloud::ConstPtr cloud)
   {
+
     PlaneFitResult res;
     pcl::PointIndices::Ptr inliers=boost::make_shared<pcl::PointIndices>();
+    if(cloud->size() > 0)
+    {  
+      pcl::SACSegmentation<ARPoint> seg;
+      seg.setOptimizeCoefficients(true);
+      seg.setModelType(pcl::SACMODEL_PLANE);
+      seg.setMethodType(pcl::SAC_RANSAC);
+      seg.setDistanceThreshold(distance_threshold_);
 
-    pcl::SACSegmentation<ARPoint> seg;
-    seg.setOptimizeCoefficients(true);
-    seg.setModelType(pcl::SACMODEL_PLANE);
-    seg.setMethodType(pcl::SAC_RANSAC);
-    seg.setDistanceThreshold(distance_threshold_);
+      seg.setInputCloud(cloud);
+      seg.segment(*inliers, res.coeffs);
 
-    seg.setInputCloud(cloud);
-    seg.segment(*inliers, res.coeffs);
-
-    pcl::ExtractIndices<ARPoint> extracter;
-    extracter.setInputCloud(cloud);
-    extracter.setIndices(inliers);
-    extracter.setNegative(false);
-    extracter.filter(*res.inliers);
-  
+      pcl::ExtractIndices<ARPoint> extracter;
+      extracter.setInputCloud(cloud);
+      extracter.setIndices(inliers);
+      extracter.setNegative(false);
+      extracter.filter(*res.inliers);
+    }
     return res;
   }
 
