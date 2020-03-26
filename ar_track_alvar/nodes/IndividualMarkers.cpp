@@ -48,6 +48,8 @@
 #include <dynamic_reconfigure/server.h>
 #include <ar_track_alvar/ParamsConfig.h>
 #include <Eigen/StdVector>
+#include <vector>
+#include <sstream>
 
 namespace gm=geometry_msgs;
 namespace ata=ar_track_alvar;
@@ -85,6 +87,7 @@ std::string cam_info_topic;
 std::string output_frame;
 int marker_resolution = 5; // default marker resolution
 int marker_margin = 2; // default marker margin
+vector<int> marker_list; // global variable for marker list
 
 
 //Debugging utility function
@@ -387,7 +390,17 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 	  double qy = p.quaternion[2];
 	  double qz = p.quaternion[3];
 	  double qw = p.quaternion[0];
-    if(id == 2 || id == 10)
+
+    bool marker_in_list = false;
+    for(int i=0; i<marker_list.size(); i++)
+    {
+      if(id==marker_list[i])
+      {
+        marker_in_list = true;
+        break;
+      }
+    }
+    if(marker_in_list)
     {
         tf::Quaternion rotation (qx,qy,qz,qw);
         tf::Vector3 origin (px,py,pz);
@@ -500,6 +513,35 @@ int main(int argc, char *argv[])
 {
   ros::init (argc, argv, "marker_detect");
   ros::NodeHandle n, pn("~");
+
+  // read marker list from rosparam
+  std::string marker_name_prefix = "/ar_track_alvar/marker_";
+  std::string marker_num;
+  std::string marker_name;
+  int marker;
+  //vector<int> marker_list;
+  for(int i=1; ; i++)
+  {
+    ostringstream convert;
+    convert<<i;
+    marker_num = convert.str();
+    marker_name = marker_name_prefix + marker_num;
+      if(pn.getParam(marker_name, marker))
+      {
+        marker_list.push_back(marker);
+      }
+      else if(i>1)
+      {
+        cout<<"Num of markers:";
+        cout<<marker_list.size()<<endl;
+        break;
+      }
+      else
+      {
+        cout<<"No marker found.";
+        break;
+      }
+  }
 
   if(argc > 1) {
     ROS_WARN("Command line arguments are deprecated. Consider using ROS parameters and remappings.");
