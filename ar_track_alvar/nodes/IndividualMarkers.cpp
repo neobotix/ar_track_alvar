@@ -513,7 +513,7 @@ int main(int argc, char *argv[])
 {
   ros::init (argc, argv, "marker_detect");
   ros::NodeHandle n, pn("~");
-
+  /*
   // read marker list from rosparam
   std::string marker_name_prefix = "/ar_track_alvar/marker_";
   std::string marker_num;
@@ -541,6 +541,18 @@ int main(int argc, char *argv[])
         cout<<"No marker found.";
         break;
       }
+  }*/
+  std::string marker_name = "/ar_track_alvar/markers";
+  if(pn.getParam(marker_name, marker_list))
+  {
+    for(vector<int>::iterator i = marker_list.begin(); i != marker_list.end(); ++i)
+    {
+      std::cout<<marker_list[0]<<std::endl;
+    }
+  }
+  else
+  {
+    std::cout<<"No marker found.";
   }
 
   if(argc > 1) {
